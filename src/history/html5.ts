@@ -176,10 +176,11 @@ function buildState(
 function useHistoryStateNavigation(base: string) {
   const { history, location } = window
 
-  // private variables
+  // private variables --> 一个封装了 window.location 的对象
   const currentLocation: ValueContainer<HistoryLocation> = {
     value: createCurrentLocation(base, location),
   }
+  // 关联了 window.history.state的对象
   const historyState: ValueContainer<StateEntry> = { value: history.state }
   // build current history entry as this is a fresh navigation
   if (!historyState.value) {
@@ -199,7 +200,7 @@ function useHistoryStateNavigation(base: string) {
       true
     )
   }
-
+  // 这个函数还是为了解决因为 <base> 标签引发的不能正确进行路由跳转的问题，进行了url的格式化
   function changeLocation(
     to: HistoryLocation,
     state: StateEntry,
@@ -305,12 +306,14 @@ function useHistoryStateNavigation(base: string) {
 /**
  * Creates an HTML5 history. Most common history for single page applications.
  *
- * @param base -
+ * @param base -(Useful when the application is hosted inside of a folder like https://example.com/folder/)
+ * createWebHistory('/folder/')  gives a url of `https://example.com/folder/`
  */
 export function createWebHistory(base?: string): RouterHistory {
-  base = normalizeBase(base)
+  base = normalizeBase(base) // 如果传入base,就格式化，没有则从 <base> 标签中拿取，拿到之后再格式化
 
   const historyNavigation = useHistoryStateNavigation(base)
+  // 在useHistoryListeners 中添加 ‘popstate’ 事件 ，相应路由事件
   const historyListeners = useHistoryListeners(
     base,
     historyNavigation.state,

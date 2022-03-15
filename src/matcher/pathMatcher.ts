@@ -21,6 +21,7 @@ export function createRouteRecordMatcher(
   parent: RouteRecordMatcher | undefined,
   options?: PathParserOptions
 ): RouteRecordMatcher {
+  // tokenizePath 将path token化， 然后 parse token 按照既定规则分配权重 ,得到解析后的 parser
   const parser = tokensToParser(tokenizePath(record.path), options)
 
   // warn against params with the same name

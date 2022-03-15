@@ -39,7 +39,7 @@ export interface RouterViewDevtoolsContext
   extends Pick<RouteLocationMatched, 'path' | 'name' | 'meta'> {
   depth: number
 }
-
+// defineComponent() ： A type helper for defining a Vue component with type inference.
 export const RouterViewImpl = /*#__PURE__*/ defineComponent({
   name: 'RouterView',
   // #674 we manually inherit them
@@ -51,20 +51,20 @@ export const RouterViewImpl = /*#__PURE__*/ defineComponent({
     },
     route: Object as PropType<RouteLocationNormalizedLoaded>,
   },
-
+  // setup(props, context) {} ，context  结构  setup(props, { attrs, slots, emit, expose }) {}
   setup(props, { attrs, slots }) {
     __DEV__ && warnDeprecatedUsage()
 
     const injectedRoute = inject(routerViewLocationKey)!
     const routeToDisplay = computed(() => props.route || injectedRoute.value)
     const depth = inject(viewDepthKey, 0)
-    const matchedRouteRef = computed<RouteLocationMatched | undefined>(
+    const matchedRouteRef = computed<RouteLocationMatched | undefined>( // 获取当前的匹配路由组件的引用 (reference)
       () => routeToDisplay.value.matched[depth]
     )
 
     provide(viewDepthKey, depth + 1)
     provide(matchedRouteKey, matchedRouteRef)
-    provide(routerViewLocationKey, routeToDisplay)
+    provide(routerViewLocationKey, routeToDisplay) // 继续向子级组件注入 routerViewLocationKey
 
     const viewRef = ref<ComponentPublicInstance>()
 
@@ -138,7 +138,7 @@ export const RouterViewImpl = /*#__PURE__*/ defineComponent({
           matchedRoute!.instances[currentName] = null
         }
       }
-
+      // h() : Creates virtual DOM nodes (vnodes). ViewComponent即是与当前路由匹配的vue组件，最终router-view渲染成了实际的动态路由组件
       const component = h(
         ViewComponent,
         assign({}, routeProps, attrs, {
@@ -169,7 +169,7 @@ export const RouterViewImpl = /*#__PURE__*/ defineComponent({
           instance.__vrv_devtools = info
         })
       }
-
+      // 这里返回的是一个 VNode
       return (
         // pass the vnode to the slot as a prop.
         // h and <component :is="..."> both accept vnodes
@@ -179,10 +179,12 @@ export const RouterViewImpl = /*#__PURE__*/ defineComponent({
     }
   },
 })
-
+// 参考：https://vuejs.org/guide/extras/render-function.html#rendering-slots（slot 传参）
 function normalizeSlot(slot: Slot | undefined, data: any) {
+  // 这里传入的slot 是 this.$slots.default, 它是一个函数，可以传入参数调用 返回一个VNode[]数组
+  // 调用slot(data),传入的参数就是 router-view 组件插槽中用的参数 ，参考 /playground/App.vue 文件中的 line:165
   if (!slot) return null
-  const slotContent = slot(data)
+  const slotContent = slot(data) // VNode[] 数组
   return slotContent.length === 1 ? slotContent[0] : slotContent
 }
 
@@ -191,7 +193,9 @@ function normalizeSlot(slot: Slot | undefined, data: any) {
 /**
  * Component to display the current route the user is at.
  */
+// 这里定义并导出了 RouterView 的 typescript 的 type(类型)
 export const RouterView = RouterViewImpl as unknown as {
+  // Construct Signatures, new 参数为空 ,返回值为后面{}中的内容
   new (): {
     $props: AllowedComponentProps &
       ComponentCustomProps &

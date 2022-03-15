@@ -354,7 +354,7 @@ export interface Router {
  */
 export function createRouter(options: RouterOptions): Router {
   const matcher = createRouterMatcher(options.routes, options)
-  const parseQuery = options.parseQuery || originalParseQuery
+  const parseQuery = options.parseQuery || originalParseQuery // 实现了解析 url params 功能
   const stringifyQuery = options.stringifyQuery || originalStringifyQuery
   const routerHistory = options.history
   if (__DEV__ && !routerHistory)
@@ -1206,7 +1206,7 @@ export function createRouter(options: RouterOptions): Router {
         // @ts-expect-error: the key matches
         reactiveRoute[key] = computed(() => currentRoute.value[key])
       }
-
+      // 这里从app层级注入了 routerViewLocationKey： currentRoute (当前路由)，这个在 RouterView 组件中需要 line:
       app.provide(routerKey, router)
       app.provide(routeLocationKey, reactive(reactiveRoute))
       app.provide(routerViewLocationKey, currentRoute)

@@ -58,7 +58,7 @@ export function parseQuery(search: string): LocationQuery {
   const hasLeadingIM = search[0] === '?'
   const searchParams = (hasLeadingIM ? search.slice(1) : search).split('&')
   for (let i = 0; i < searchParams.length; ++i) {
-    // pre decode the + into space
+    // pre decode the + into space // 将 + 替换为空字符串
     const searchParam = searchParams[i].replace(PLUS_RE, ' ')
     // allow the = character
     const eqPos = searchParam.indexOf('=')

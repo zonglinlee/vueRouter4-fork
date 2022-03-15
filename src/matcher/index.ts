@@ -147,11 +147,12 @@ export function createRouterMatcher(
         }
       } else {
         // otherwise, the first record is the original and others are aliases
+        // https://router.vuejs.org/guide/essentials/redirect-and-alias.html#alias
         originalMatcher = originalMatcher || matcher
         if (originalMatcher !== matcher) originalMatcher.alias.push(matcher)
 
         // remove the route if named and only for the top record (avoid in nested calls)
-        // this works because the original record is the first one
+        // this works because the original record is the first one // 这里是防止重名路由添加吗 ？
         if (isRootAdd && record.name && !isAliasRecord(matcher))
           removeRoute(record.name)
       }
