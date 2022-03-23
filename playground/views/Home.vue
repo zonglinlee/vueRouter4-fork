@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import { defineComponent, getCurrentInstance, ref } from 'vue'
+import {defineComponent, getCurrentInstance, ref} from 'vue'
 
 export default defineComponent({
   name: 'Home',
@@ -18,7 +18,11 @@ export default defineComponent({
     toggle: false,
     counter: 0,
   }),
-
+  methods:{
+    addCounter(){
+      this.counter ++
+    }
+  },
   setup() {
     const me = getCurrentInstance()
 
@@ -32,7 +36,13 @@ export default defineComponent({
       someData: ref(0),
     }
   },
-
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      // 通过 `vm` 访问组件实例
+      vm.addCounter()
+      console.log(vm.counter)
+    })
+  },
   _beforeRouteEnter() {
     this.toggle = true
   },
