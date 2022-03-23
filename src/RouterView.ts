@@ -58,7 +58,8 @@ export const RouterViewImpl = /*#__PURE__*/ defineComponent({
     const injectedRoute = inject(routerViewLocationKey)!
     const routeToDisplay = computed(() => props.route || injectedRoute.value)
     const depth = inject(viewDepthKey, 0)
-    const matchedRouteRef = computed<RouteLocationMatched | undefined>( // 获取当前的匹配路由组件的引用 (reference)
+    // 获取当前的匹配路由组件的计算属性 matchedRouteRef (reference)
+    const matchedRouteRef = computed<RouteLocationMatched | undefined>(
       () => routeToDisplay.value.matched[depth]
     )
 
@@ -94,7 +95,7 @@ export const RouterViewImpl = /*#__PURE__*/ defineComponent({
           }
         }
 
-        // trigger beforeRouteEnter next callbacks
+        // trigger beforeRouteEnter next callbacks // 调用 beforeRouterEnter 中传入的回调函数 next,注意它传入的参数 是当前 instance
         if (
           instance &&
           to &&
@@ -113,6 +114,7 @@ export const RouterViewImpl = /*#__PURE__*/ defineComponent({
     return () => {
       const route = routeToDisplay.value
       const matchedRoute = matchedRouteRef.value
+      // 当路由变更时候 计算属性matchedRouteRef也跟着改变，从而获取到真正的页面视图组件 ViewComponent
       const ViewComponent = matchedRoute && matchedRoute.components[props.name]
       // we need the value at the time we render because when we unmount, we
       // navigated to a different location so the value is different

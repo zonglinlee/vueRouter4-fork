@@ -635,6 +635,7 @@ export function createRouter(options: RouterOptions): Router {
     to: RouteLocationRaw | RouteLocation,
     redirectedFrom?: RouteLocation
   ): Promise<NavigationFailure | void | undefined> {
+    // 参数 to 可能有多种情况，可以是一个表示路径的字符串，也可以是一个路径对象，所以要先经过一层 resolve 返回一个新的路径对象，它比前面提到的路径对象多了一个 matched 属性
     const targetLocation: RouteLocation = (pendingLocation = resolve(to))
     const from = currentRoute.value
     const data: HistoryState | undefined = (to as RouteLocationOptions).state
@@ -731,6 +732,8 @@ export function createRouter(options: RouterOptions): Router {
           }
         } else {
           // if we fail we don't finalize the navigation
+          // finalizeNavigation函数中执行 window.history 的　push / replace 方法
+          // 并在 markAsReady 函数中监听了 window上的 popstate 事件
           failure = finalizeNavigation(
             toLocation as RouteLocationNormalizedLoaded,
             from,
@@ -739,6 +742,7 @@ export function createRouter(options: RouterOptions): Router {
             data
           )
         }
+        // 执行 全局导航守卫 AfterEach 钩子函数
         triggerAfterEach(
           toLocation as RouteLocationNormalizedLoaded,
           from,
@@ -773,6 +777,7 @@ export function createRouter(options: RouterOptions): Router {
       extractChangingRecords(to, from)
 
     // all components here have been resolved once because we are leaving
+    // 路由导航从当前路由切换至下一个路由，提取当前组件中的 beforeRouterLeave 钩子函数
     guards = extractComponentsGuards(
       leavingRecords.reverse(),
       'beforeRouteLeave',
@@ -797,11 +802,11 @@ export function createRouter(options: RouterOptions): Router {
 
     // run the queue of per route beforeRouteLeave guards
     return (
-      runGuardQueue(guards)
+      runGuardQueue(guards) // ① 调用 beforeRouteLeave 钩子函数
         .then(() => {
           // check global guards beforeEach
           guards = []
-          for (const guard of beforeGuards.list()) {
+          for (const guard of beforeGuards.list()) { // ② beforeEach 钩子函数
             guards.push(guardToPromiseFn(guard, to, from))
           }
           guards.push(canceledNavigationCheck)
@@ -825,13 +830,13 @@ export function createRouter(options: RouterOptions): Router {
           guards.push(canceledNavigationCheck)
 
           // run the queue of per route beforeEnter guards
-          return runGuardQueue(guards)
+          return runGuardQueue(guards) // ③ 调用 beforeRouteUpdate 钩子函数
         })
         .then(() => {
           // check the route beforeEnter
           guards = []
           for (const record of to.matched) {
-            // do not trigger beforeEnter on reused views
+            // do not trigger beforeEnter on reused views // ④ 路由独享的守卫： route上的beforeEnter钩子函数
             if (record.beforeEnter && !from.matched.includes(record)) {
               if (Array.isArray(record.beforeEnter)) {
                 for (const beforeEnter of record.beforeEnter)
@@ -862,12 +867,12 @@ export function createRouter(options: RouterOptions): Router {
           guards.push(canceledNavigationCheck)
 
           // run the queue of per route beforeEnter guards
-          return runGuardQueue(guards)
+          return runGuardQueue(guards) // ⑤ beforeRouteEnter 钩子
         })
         .then(() => {
           // check global guards beforeResolve
           guards = []
-          for (const guard of beforeResolveGuards.list()) {
+          for (const guard of beforeResolveGuards.list()) { // ⑥ beforeResolve 路由守卫
             guards.push(guardToPromiseFn(guard, to, from))
           }
           guards.push(canceledNavigationCheck)
@@ -1047,7 +1052,7 @@ export function createRouter(options: RouterOptions): Router {
               routerHistory.go(-1, false)
             }
           }
-
+          // ⑦ 调用全局的 afterEach 钩子
           triggerAfterEach(
             toLocation as RouteLocationNormalizedLoaded,
             from,
@@ -1206,7 +1211,7 @@ export function createRouter(options: RouterOptions): Router {
         // @ts-expect-error: the key matches
         reactiveRoute[key] = computed(() => currentRoute.value[key])
       }
-      // 这里从app层级注入了 routerViewLocationKey： currentRoute (当前路由)，这个在 RouterView 组件中需要 line:
+      // 这里从app层级注入了 routerViewLocationKey： currentRoute (当前路由)，这个在 RouterView 组件中需要 line:58
       app.provide(routerKey, router)
       app.provide(routeLocationKey, reactive(reactiveRoute))
       app.provide(routerViewLocationKey, currentRoute)
@@ -1236,6 +1241,12 @@ export function createRouter(options: RouterOptions): Router {
   return router
 }
 
+/**
+ *
+ * @param guards
+ * example: guards [ fn1, fn2 ]
+ * promise.then( () => fn1() ).then( ()=> fn2() )
+ */
 function runGuardQueue(guards: Lazy<any>[]): Promise<void> {
   return guards.reduce(
     (promise, guard) => promise.then(() => guard()),

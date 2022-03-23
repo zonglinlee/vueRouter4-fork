@@ -130,6 +130,8 @@ export function guardToPromiseFn(
   const enterCallbackArray =
     record &&
     // name is defined if record is because of the function overload
+      // 注意这里，只有当 record 存在的时候才进行后续的赋值操作，给record上绑定 enterCallbacks 回调
+    //  这里将 beforeRouteEnter 中的 next 回调函数绑定在 record.enterCallbacks 上面，并最终在 routerView.ts line:106 中调用
     (record.enterCallbacks[name!] = record.enterCallbacks[name!] || [])
 
   return () =>
@@ -279,6 +281,7 @@ export function extractComponentsGuards(
       }
 
       // skip update and leave guards if the route component is not mounted
+      // 只有当 guardType 是 'beforeRouteEnter'的时候才会进行 continue 后续操作
       if (guardType !== 'beforeRouteEnter' && !record.instances[name]) continue
 
       if (isRouteComponent(rawComponent)) {
