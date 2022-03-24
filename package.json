@@ -49,8 +49,8 @@
     "test:e2e:native": "node e2e/runner.js -e chrome --tag no-headless",
     "test:e2e:ci": "node e2e/runner.js -e firefox --retries 2",
     "test:e2e:bs": "node e2e/runner.js --local -e edge_pre_chrome,android44 -c e2e/nightwatch.browserstack.js --tag browserstack",
-    "commit": "git add . && git commit -m 'add' && git push learn myfork:learn",
-    "push": "git push learn myfork:learn"
+    "commit": "git add . && git commit -m 'add' && git push learn myfork:master",
+    "push": "git push learn myfork:master"
   },
   "gitHooks": {
     "pre-commit": "lint-staged",
